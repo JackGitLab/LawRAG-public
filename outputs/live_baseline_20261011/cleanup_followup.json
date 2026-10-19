@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-11T11:23:07.7703972+08:00",
+  "original_collector_exit": 1,
+  "original_cleanup": {
+    "pid": 206224,
+    "method": "terminate",
+    "terminated": true,
+    "exit_code": 1,
+    "port_released": false
+  },
+  "port": 58974,
+  "matching_process_count": 0,
+  "matching_listener_count": 0,
+  "no_additional_termination_performed": true
+}

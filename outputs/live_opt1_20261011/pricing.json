@@ -1,0 +1,35 @@
+[
+  {
+    "service": "DeepSeek", "model": "deepseek-flash", "applies_to_models": ["deepseek-flash"],
+    "currency": "CNY", "unit": "元/百万tokens",
+    "input_cache_miss_per_m": 1.0, "input_cache_hit_per_m": 0.02, "output_per_m": 4.0,
+    "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/", "checked_on": "2026-10-11",
+    "source_excerpt": "2026-10-11 浏览工具读取官方页面：Flash 空闲费率为缓存命中输入 0.02、未命中输入 1、输出 4 元/百万 tokens；高峰对应 0.04、2、8。",
+    "conditions": "北京时间周末全日空闲；本次授权采集日期 2026-10-11 为周日。公开目录价估算，非账户实际扣费。",
+    "price_status": "frozen_verified", "note": "来源为本次浏览工具读取内容的数值摘录；未获取账户账单。"
+  },
+  {
+    "service": "DeepSeek", "model": "deepseek-chat", "applies_to_models": ["deepseek-chat"],
+    "currency": "CNY", "unit": "元/百万tokens", "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+    "checked_on": "2026-10-11", "source_excerpt": "当前读取页面列出 deepseek-flash 与 deepseek-v4-pro，没有确认 deepseek-chat 的现行计费映射。",
+    "conditions": "保留应用实际模型配置；不把历史别名价格自动套到本次调用。", "price_status": "unknown"
+  },
+  {
+    "service": "SiliconFlow", "model": "BAAI/bge-m3", "applies_to_models": ["BAAI/bge-m3"],
+    "currency": "CNY", "unit": "元/百万tokens", "source_url": "https://siliconflow.cn/pricing",
+    "checked_on": "2026-10-11", "source_excerpt": "本次读取公开价格页，未取得足以核验此模型账户价格与 usage 的证据。",
+    "conditions": "历史公开免费档不代表当前账户已核实零费用。", "price_status": "unknown"
+  },
+  {
+    "service": "SiliconFlow", "model": "BAAI/bge-reranker-v2-m3", "applies_to_models": ["BAAI/bge-reranker-v2-m3"],
+    "currency": "CNY", "unit": "元/百万tokens", "source_url": "https://siliconflow.cn/pricing",
+    "checked_on": "2026-10-11", "source_excerpt": "本次读取公开价格页，未取得足以核验此模型账户价格与 usage 的证据。",
+    "conditions": "历史公开免费档不代表当前账户已核实零费用。", "price_status": "unknown"
+  },
+  {
+    "service": "Bocha", "model": "web-search", "applies_to_models": ["web_search", "verify_statute_status"],
+    "currency": "CNY", "unit": "元/次", "price_per_call": null, "source_url": "https://open.bochaai.com/",
+    "checked_on": "2026-10-11", "source_excerpt": "公开入口可读；本账户的单次有效费率未取得。",
+    "conditions": "费用未知，不能记为零。", "price_status": "unknown"
+  }
+]

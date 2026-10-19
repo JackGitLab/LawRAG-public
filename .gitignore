@@ -1,0 +1,20 @@
+.venv/
+**/__pycache__/
+.pytest_cache/
+chroma_db/
+logs/
+data/
+.pytest_tmp/
+.env
+frontend/node_modules/
+frontend/dist/
+
+# Local development records; keep execution dependencies in outputs tracked.
+/docs/ERRORS.md
+/outputs/STAGE*.md
+/outputs/E102*.md
+/outputs/live_baseline_20261011/PLAN.md
+
+# Superseded README visuals, retained locally for reference.
+/assets/readme/hero.svg
+/assets/readme/workflow.svg

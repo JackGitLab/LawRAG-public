@@ -1,0 +1,18 @@
+{
+  "exit_codes": [
+    0,
+    0
+  ],
+  "actual_report_bytes_equal": true,
+  "raw_inputs_unchanged": true,
+  "raw_file_hashes": {
+    "lawrag.sqlite3": "c0e907ab7bf8e10384d4f0fba805b42c7d6bfa8a221413e209e8bc0e6d8c4345",
+    "lawrag.sqlite3-shm": "6ac9b4ec8e5f1ae4251af84478ceba022f572b45c01d373b757d964ad352ae57",
+    "lawrag.sqlite3-wal": "eaf4dc107f755088ff08aa09ad23bb6cd496d33f02581bb4b2f1ef599beed9b8",
+    "manifest.json": "a459a670c8de3ebee143b9995e10635afdb55b32be7bdfcaa614d43e59116f67",
+    "observations.jsonl": "7cc8923cdd62cd437245f8b14ced5f230ff20e2de16f09fe27006dc94633a682",
+    "report.md": "66e9d09df7f85cddee5e59f4c5888d52c646be82d905476e6f695f868375e3ef",
+    "requests.jsonl": "49da5a6487297e17935f37f424825c41e7eadeaad6336e665a6aee976dbdb9a6",
+    "server.log": "13a390305c47088e6152038deddcb873298a026e23d2848f5324e87ffea3cf64"
+  }
+}

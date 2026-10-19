@@ -1,0 +1,150 @@
+{
+  "checks": {
+    "request_count_24": true,
+    "phases_6_18": true,
+    "all_http_200": true,
+    "all_path_match": true,
+    "no_unassigned_observations": true,
+    "real_data_unchanged": true,
+    "own_process_cleaned": false,
+    "price_snapshot_matches": true,
+    "raw_timing_recomputed": true,
+    "session_isolation_16": true,
+    "within_task_same_session": true,
+    "rerank_attempts_recorded": true,
+    "protected_unchanged": true
+  },
+  "all_checks_pass": false,
+  "request_count": 24,
+  "observations": 224,
+  "llm_calls": 36,
+  "models": {
+    "deepseek-chat": 28,
+    "deepseek-flash": 8
+  },
+  "rerank_calls": 24,
+  "rerank_attempts": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "formal_stats": {
+    "PERF-LIB-01/T1/first_ms": {
+      "n": 3,
+      "min": 5029.12,
+      "median": 5316.830000000001,
+      "max": 5830.811
+    },
+    "PERF-LIB-01/T1/done_ms": {
+      "n": 3,
+      "min": 5296.606,
+      "median": 5761.485000000001,
+      "max": 6202.3369999999995
+    },
+    "PERF-MULTI-01/T1/first_ms": {
+      "n": 3,
+      "min": 3893.59,
+      "median": 4172.907,
+      "max": 4302.983
+    },
+    "PERF-MULTI-01/T1/done_ms": {
+      "n": 3,
+      "min": 4250.556,
+      "median": 4482.216,
+      "max": 4691.313
+    },
+    "PERF-MULTI-01/T2/first_ms": {
+      "n": 3,
+      "min": 6531.472,
+      "median": 7195.718,
+      "max": 8541.505000000001
+    },
+    "PERF-MULTI-01/T2/done_ms": {
+      "n": 3,
+      "min": 6857.759,
+      "median": 7446.723000000001,
+      "max": 9015.134
+    },
+    "PERF-CALC-01/T1/first_ms": {
+      "n": 3,
+      "min": 5105.659000000001,
+      "median": 5278.630999999999,
+      "max": 10289.007
+    },
+    "PERF-CALC-01/T1/done_ms": {
+      "n": 3,
+      "min": 5105.988,
+      "median": 5278.900000000001,
+      "max": 10289.37
+    },
+    "PERF-CALC-01/T2/first_ms": {
+      "n": 3,
+      "min": 9957.192,
+      "median": 10762.265,
+      "max": 33664.459
+    },
+    "PERF-CALC-01/T2/done_ms": {
+      "n": 3,
+      "min": 10273.487,
+      "median": 11132.797,
+      "max": 34231.237
+    },
+    "PERF-WEB-01/T1/first_ms": {
+      "n": 3,
+      "min": 8887.015,
+      "median": 9084.365,
+      "max": 10298.625
+    },
+    "PERF-WEB-01/T1/done_ms": {
+      "n": 3,
+      "min": 8990.921999999999,
+      "median": 9156.639000000001,
+      "max": 10380.091999999999
+    },
+    "PERF-LIB-01/task_done_sum_ms": {
+      "n": 3,
+      "min": 5296.606,
+      "median": 5761.485000000001,
+      "max": 6202.3369999999995
+    },
+    "PERF-MULTI-01/task_done_sum_ms": {
+      "n": 3,
+      "min": 11339.975,
+      "median": 11697.279,
+      "max": 13706.447
+    },
+    "PERF-CALC-01/task_done_sum_ms": {
+      "n": 3,
+      "min": 16238.785,
+      "median": 20562.857,
+      "max": 39510.137
+    },
+    "PERF-WEB-01/task_done_sum_ms": {
+      "n": 3,
+      "min": 8990.921999999999,
+      "median": 9156.639000000001,
+      "max": 10380.091999999999
+    }
+  }
+}

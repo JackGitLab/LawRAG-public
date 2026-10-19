@@ -1,0 +1,189 @@
+{
+  "format": "lawrag-performance-cases/1.0.0",
+  "frozen_date": "2026-10-11",
+  "purpose": "第三阶段第二步（clarify 分支跳过检索）优化后测量对照版本：问题、顺序、轮数、联网开关与预热/正式重复计划同 tests/performance_cases.json 完全一致；仅更新本优化允许的节点顺序与 clarify 轮检索省略。优化后真实采集须单独授权并显式选用本文件，不得覆盖旧冻结文件与旧证据。",
+  "derived_from": {
+    "file": "tests/performance_cases.json",
+    "file_sha256": "4e8f5e1cab7380483014a9150e8df99b1498516ee12d10cd05d0b78e53bfaf02",
+    "content_sha256": "e9516e04baef085824f5593f081a379b7dde9c8330a5b7f7516ac6034e610b9e",
+    "frozen_date": "2026-10-10"
+  },
+  "change_scope": [
+    "节点顺序：route 提前到 retrieve 之前（prepare → route → retrieve → tools/generate）；nodes 数组按实际执行顺序书写。",
+    "PERF-CALC-01 第 1 轮（缺参追问）：跳过向量/BM25/重排检索，nodes 去掉 retrieve，retrieval_steps 清空。",
+    "问题文本、场景顺序、轮数、use_web_search、answer_mode、llm_calls、tool_executions、tool_inits、预热（warmup_passes=1）与正式重复（formal_reps=3）计划均不变；llm_calls 不因本优化减少（不将检索省略写成模型调用优化）。"
+  ],
+  "path_differences": [
+    {
+      "scenario": "PERF-LIB-01",
+      "turn": 1,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "generate"],
+      "new": ["prepare", "route", "retrieve", "generate"],
+      "reason": "route 前移（非 clarify 分支仍检索一次）"
+    },
+    {
+      "scenario": "PERF-MULTI-01",
+      "turn": 1,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "generate"],
+      "new": ["prepare", "route", "retrieve", "generate"],
+      "reason": "route 前移（非 clarify 分支仍检索一次）"
+    },
+    {
+      "scenario": "PERF-MULTI-01",
+      "turn": 2,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "generate"],
+      "new": ["prepare", "route", "retrieve", "generate"],
+      "reason": "route 前移（非 clarify 分支仍检索一次）"
+    },
+    {
+      "scenario": "PERF-CALC-01",
+      "turn": 1,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "clarify"],
+      "new": ["prepare", "route", "clarify"],
+      "reason": "route 判 clarify 后直接追问，跳过 retrieve"
+    },
+    {
+      "scenario": "PERF-CALC-01",
+      "turn": 1,
+      "field": "retrieval_steps",
+      "old": ["vector", "bm25", "rerank"],
+      "new": [],
+      "reason": "clarify 轮不执行向量/BM25/重排（不记录假的零耗时检索）"
+    },
+    {
+      "scenario": "PERF-CALC-01",
+      "turn": 2,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "tools", "generate"],
+      "new": ["prepare", "route", "retrieve", "tools", "generate"],
+      "reason": "route 前移（补齐参数的计算轮仍检索一次并执行计算器）"
+    },
+    {
+      "scenario": "PERF-WEB-01",
+      "turn": 1,
+      "field": "nodes",
+      "old": ["prepare", "retrieve", "route", "tools", "generate"],
+      "new": ["prepare", "route", "retrieve", "tools", "generate"],
+      "reason": "route 前移（联网轮仍检索一次）"
+    }
+  ],
+  "assumptions": [
+    "预期路径按默认检索策略 hybrid_rerank、默认模型配置（deepseek-chat / deepseek-flash）与优化后编排（prepare→route→retrieve→tools/generate，clarify 直达）推演；检索策略、Prompt 或编排变更后需重新冻结并重新采集。",
+    "预期路径只表示指定技术流程（节点执行、LLM 逻辑调用、工具执行）是否发生，不代表回答的独立法律质量审核通过。",
+    "S3-T1 的回答是第二阶段确定性追问文案，不经过生成模型，其首段耗时是确定性输出耗时，不是模型首 token 时间。",
+    "llm_calls 记录逻辑调用用途（rewrite/router/generate 等），不是 token 数；SSE 文本事件数也不等于模型 token 数。",
+    "每次重复使用新会话；同一场景各轮共享同一会话；预热与正式样本分开标记。"
+  ],
+  "scenarios": [
+    {
+      "id": "PERF-LIB-01",
+      "name": "普通库内问答",
+      "measurement_focus": "默认检索与生成",
+      "turns": [
+        {
+          "question": "用人单位可以和劳动者约定竞业限制吗？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "route", "retrieve", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "首轮无历史，不触发改写；问题不含计算关键词，route 不进入计算规划（不调用路由模型）。非 clarify 分支：route 后检索一次再生成。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-MULTI-01",
+      "name": "多轮追问",
+      "measurement_focus": "第二轮改写及完整任务耗时",
+      "turns": [
+        {
+          "question": "劳动合同的试用期最长可以约定多久？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "route", "retrieve", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "首轮无历史，不触发改写。非 clarify 分支：route 后检索一次再生成。"
+        },
+        {
+          "question": "如果约定的试用期超过了这个期限，法律后果是什么？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "route", "retrieve", "generate"],
+            "llm_calls": ["rewrite", "generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "会话含历史，prepare 触发追问改写；改写输出若含计算关键词，route 可能额外进入计算规划，实际路径按采集记录为准。非 clarify 分支：route 后检索一次再生成。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-CALC-01",
+      "name": "缺参计算后补齐",
+      "measurement_focus": "确定性追问与后续计算",
+      "turns": [
+        {
+          "question": "我在公司工作了 3 年，帮我算一下经济补偿是多少？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "route", "clarify"],
+            "llm_calls": ["router"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": [],
+            "answer_mode": "deterministic_clarify"
+          },
+          "note": "只给年限缺月工资：route 调用路由模型规划计算器（参数不全），本轮路由判 clarify 后直接输出确定性追问——不执行向量/BM25/重排、不调用生成模型、不执行工具（较旧版唯一的行为差异：跳过检索）。"
+        },
+        {
+          "question": "月平均工资是 8000 元",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "route", "retrieve", "tools", "generate"],
+            "llm_calls": ["rewrite", "router", "generate"],
+            "tool_executions": ["calculate_labor_compensation"],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "补齐月工资后执行本地计算器并生成回答；会话含历史，prepare 先触发改写；非 clarify 分支仍检索一次。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-WEB-01",
+      "name": "显式开启联网的问答",
+      "measurement_focus": "外部工具初始化、调用与生成",
+      "turns": [
+        {
+          "question": "《中华人民共和国劳动合同法》最近有没有被废止或者修订？",
+          "use_web_search": true,
+          "expected_path": {
+            "nodes": ["prepare", "route", "retrieve", "tools", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": ["verify_statute_status"],
+            "tool_inits": ["mcp_init"],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "显式开启联网且问题命中时效关键词，确定性规划 verify_statute_status；非 clarify 分支仍检索一次。工具调用失败或资料不足时按实际路径记录，不得包装成更快。"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "format": "lawrag-performance-cases/1.0.0",
+  "frozen_date": "2026-10-10",
+  "purpose": "第三阶段第一步：请求性能与调用成本基线测量的固定场景。与第一阶段评测题集（evaluation_cases.json）完全独立，不修改、不复用后者。",
+  "assumptions": [
+    "预期路径按默认检索策略 hybrid_rerank、默认模型配置（deepseek-chat / deepseek-flash）与当前编排推演；检索策略、Prompt 或编排变更后需重新冻结并重新采集。",
+    "预期路径只表示指定技术流程（节点执行、LLM 逻辑调用、工具执行）是否发生，不代表回答的独立法律质量审核通过。",
+    "S3-T1 的回答是第二阶段确定性追问文案，不经过生成模型，其首段耗时是确定性输出耗时，不是模型首 token 时间。",
+    "llm_calls 记录逻辑调用用途（rewrite/router/generate 等），不是 token 数；SSE 文本事件数也不等于模型 token 数。",
+    "每次重复使用新会话；同一场景各轮共享同一会话；预热与正式样本分开标记。"
+  ],
+  "scenarios": [
+    {
+      "id": "PERF-LIB-01",
+      "name": "普通库内问答",
+      "measurement_focus": "默认检索与生成",
+      "turns": [
+        {
+          "question": "用人单位可以和劳动者约定竞业限制吗？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "首轮无历史，不触发改写；问题不含计算关键词，route 不进入计算规划（不调用路由模型）。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-MULTI-01",
+      "name": "多轮追问",
+      "measurement_focus": "第二轮改写及完整任务耗时",
+      "turns": [
+        {
+          "question": "劳动合同的试用期最长可以约定多久？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "首轮无历史，不触发改写。"
+        },
+        {
+          "question": "如果约定的试用期超过了这个期限，法律后果是什么？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "generate"],
+            "llm_calls": ["rewrite", "generate"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "会话含历史，prepare 触发追问改写；改写输出若含计算关键词，route 可能额外进入计算规划，实际路径按采集记录为准。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-CALC-01",
+      "name": "缺参计算后补齐",
+      "measurement_focus": "确定性追问与后续计算",
+      "turns": [
+        {
+          "question": "我在公司工作了 3 年，帮我算一下经济补偿是多少？",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "clarify"],
+            "llm_calls": ["router"],
+            "tool_executions": [],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "deterministic_clarify"
+          },
+          "note": "只给年限缺月工资：route 调用路由模型规划计算器（参数不全），进入 clarify 输出确定性追问，不调用生成模型、不执行工具。"
+        },
+        {
+          "question": "月平均工资是 8000 元",
+          "use_web_search": false,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "tools", "generate"],
+            "llm_calls": ["rewrite", "router", "generate"],
+            "tool_executions": ["calculate_labor_compensation"],
+            "tool_inits": [],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "补齐月工资后执行本地计算器并生成回答；会话含历史，prepare 先触发改写。"
+        }
+      ]
+    },
+    {
+      "id": "PERF-WEB-01",
+      "name": "显式开启联网的问答",
+      "measurement_focus": "外部工具初始化、调用与生成",
+      "turns": [
+        {
+          "question": "《中华人民共和国劳动合同法》最近有没有被废止或者修订？",
+          "use_web_search": true,
+          "expected_path": {
+            "nodes": ["prepare", "retrieve", "route", "tools", "generate"],
+            "llm_calls": ["generate"],
+            "tool_executions": ["verify_statute_status"],
+            "tool_inits": ["mcp_init"],
+            "retrieval_steps": ["vector", "bm25", "rerank"],
+            "answer_mode": "generated"
+          },
+          "note": "显式开启联网且问题命中时效关键词，确定性规划 verify_statute_status；工具调用失败或资料不足时按实际路径记录，不得包装成更快。"
+        }
+      ]
+    }
+  ]
+}

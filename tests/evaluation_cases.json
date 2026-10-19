@@ -1,0 +1,1418 @@
+{
+  "set_name": "lawrag-quality-evaluation",
+  "version": "1.0.0",
+  "annotation_source": "出题与标注由执行 agent 基于 kb/ 中《中华人民共和国劳动合同法》《中华人民共和国消费者权益保护法》原文完成，每题 evidence 记录来源、条号与支持标注的短摘录；未经外部专家盲测审核。独立性指独立于 tests/regression_questions.json 的 55 题回归集、且未用于本轮调优。标注状态分两类：executor_annotated（可直接由条文原文支持）与 needs_legal_review（条文适用存在解释空间，标注待复核，不作可信金标准）。",
+  "scenarios": [
+    {
+      "id": "QA-LAB-01",
+      "category": "library_qa",
+      "subcategory": "colloquial_multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在公司干了快两年了一直没签劳动合同，现在还在上班，公司要不要给我双倍工资？从哪天开始算？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十条", "中华人民共和国劳动合同法 第十四条", "中华人民共和国劳动合同法 第八十二条"],
+          "required_points": [
+            "自用工之日起超过一个月不满一年未订立书面合同的，每月支付二倍工资",
+            "自用工之日起满一年不订立书面合同的，视为已订立无固定期限劳动合同",
+            "说明双倍工资的起算规则（用工满一个月后）"
+          ],
+          "forbidden_claims": [
+            "不得给出条文之外的具体金额或精确起止日期",
+            "不得声称双倍工资适用于全部在职期间"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答，无金额或年限计算需求"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖 required_points 全部要点",
+        "实质性结论以第十条、第十四条或第八十二条之一支持",
+        "无编造金额或日期"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第八十二条", "quote": "用人单位自用工之日起超过一个月不满一年未与劳动者订立书面劳动合同的，应当向劳动者每月支付二倍的工资。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十四条", "quote": "用人单位自用工之日起满一年不与劳动者订立书面劳动合同的，视为用人单位与劳动者已订立无固定期限劳动合同。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十条", "quote": "已建立劳动关系，未同时订立书面劳动合同的，应当自用工之日起一个月内订立书面劳动合同。"}
+      ],
+      "difference_from_regression": "旧题 12 只问上班一个多月能否主张双倍工资；本题追问起算规则并叠加满一年视为无固定期限的组合后果，考多条文组合。"
+    },
+    {
+      "id": "QA-LAB-02",
+      "category": "library_qa",
+      "subcategory": "conditions_exceptions",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司说签三年劳动合同可以先定半年试用期，过一阵还想让我再试用一次，这合法吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十九条"],
+          "required_points": [
+            "三年以上固定期限劳动合同试用期不得超过六个月",
+            "同一用人单位与同一劳动者只能约定一次试用期"
+          ],
+          "forbidden_claims": [
+            "不得声称可以重复约定试用期"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答，无计算参数"
+        }
+      ],
+      "completion_criteria": [
+        "同时回答试用期上限与只能约定一次两个要点",
+        "结论由第十九条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第十九条", "quote": "三年以上固定期限和无固定期限的劳动合同，试用期不得超过六个月。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十九条", "quote": "同一用人单位与同一劳动者只能约定一次试用期。"}
+      ],
+      "difference_from_regression": "旧题 2 只问三年以上合同试用期上限；本题叠加“再次约定试用期”的禁止情形，考条件与例外。"
+    },
+    {
+      "id": "QA-LAB-03",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "needs_legal_review",
+      "annotation_note": "第三十八条情形下劳动者解除是否需要提前通知，条文本身未明示程序要求；required_points 只要求“可以解除 + 经济补偿”，不把程序细节当金标准。",
+      "turns": [
+        {
+          "question": "公司拖欠我三个月工资，社保也一直没交，我不想干了，可以直接走人吗？能要补偿吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第三十八条", "中华人民共和国劳动合同法 第四十六条"],
+          "required_points": [
+            "未及时足额支付劳动报酬、未依法缴纳社会保险费的，劳动者可以解除劳动合同",
+            "劳动者依第三十八条解除的，用人单位应当支付经济补偿"
+          ],
+          "forbidden_claims": [
+            "不得声称拖欠工资时劳动者辞职无法获得任何补偿",
+            "不得编造补偿金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "本题未提供工资与年限事实，不触发计算"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖解除权与经济补偿两个要点",
+        "结论由第三十八条、第四十六条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第三十八条", "quote": "（二）未及时足额支付劳动报酬的；"},
+        {"source": "中华人民共和国劳动合同法", "article": "第三十八条", "quote": "（三）未依法为劳动者缴纳社会保险费的；"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十六条", "quote": "劳动者依照本法第三十八条规定解除劳动合同的"}
+      ],
+      "difference_from_regression": "旧题 24 只问能否辞职；本题追加经济补偿后果，考第三十八条 + 第四十六条的组合推理。"
+    },
+    {
+      "id": "QA-LAB-04",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司没找着正当理由就当天把我辞退了，我不想回去上班，可以要求什么？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第四十八条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "违法解除时劳动者可以要求继续履行劳动合同",
+            "劳动者不要求继续履行的，用人单位按第八十七条支付赔偿金",
+            "赔偿金为经济补偿标准的二倍"
+          ],
+          "forbidden_claims": [
+            "不得编造具体赔偿金额",
+            "不得声称违法解除只需支付普通经济补偿"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "未提供月工资与年限，不触发计算"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖继续履行与二倍赔偿金两个救济路径",
+        "结论由第四十八条、第八十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十八条", "quote": "劳动者不要求继续履行劳动合同或者劳动合同已经不能继续履行的，用人单位应当依照本法第八十七条规定支付赔偿金。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第八十七条", "quote": "应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。"}
+      ],
+      "difference_from_regression": "旧 55 题无第四十八条 + 第八十七条组合题；本题考违法解除的救济选择与赔偿金标准。"
+    },
+    {
+      "id": "QA-LAB-05",
+      "category": "library_qa",
+      "subcategory": "conditions_exceptions",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "听说高薪的人被辞退，补偿最多只算十二年，还要按社平工资三倍封顶，什么情况下才适用这些限制？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条"],
+          "required_points": [
+            "仅当月工资高于当地上年度职工月平均工资三倍时才适用三倍封顶",
+            "适用时按三倍数额支付且补偿年限最高不超过十二年",
+            "月工资指解除或终止前十二个月的平均工资"
+          ],
+          "forbidden_claims": [
+            "不得声称所有劳动者的经济补偿一律受十二年限制",
+            "不得编造具体社平工资数额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "问适用条件，未给出计算数值"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖触发条件、封顶规则与月工资定义",
+        "结论由第四十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "劳动者月工资高于用人单位所在直辖市、设区的市级人民政府公布的本地区上年度职工月平均工资三倍的，向其支付经济补偿的标准按职工月平均工资三倍的数额支付，向其支付经济补偿的年限最高不超过十二年。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "本条所称月工资是指劳动者在劳动合同解除或者终止前十二个月的平均工资。"}
+      ],
+      "difference_from_regression": "旧题 5 问经济补偿按年限如何计算；本题专考第四十七条第二款的例外封顶条件与适用边界。"
+    },
+    {
+      "id": "QA-LAB-06",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "离职后公司按月给我竞业限制补偿，最多要我遵守多久？是不是所有人都能被约定竞业限制？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第二十三条", "中华人民共和国劳动合同法 第二十四条"],
+          "required_points": [
+            "竞业限制期限不得超过二年",
+            "竞业限制人员限于高级管理人员、高级技术人员和其他负有保密义务的人员",
+            "竞业限制期内用人单位按月给予经济补偿"
+          ],
+          "forbidden_claims": [
+            "不得声称竞业限制可以约定三年以上",
+            "不得声称任何岗位都可被约定竞业限制"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖期限上限、人员范围与按月补偿",
+        "结论由第二十三条、第二十四条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第二十四条", "quote": "竞业限制的人员限于用人单位的高级管理人员、高级技术人员和其他负有保密义务的人员。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第二十四条", "quote": "竞业限制期限，不得超过二年。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第二十三条", "quote": "在竞业限制期限内按月给予劳动者经济补偿"}
+      ],
+      "difference_from_regression": "旧题 23 只问三年期限是否合法；本题追加人员范围限定与按月补偿义务，考第二十三条 + 第二十四条组合。"
+    },
+    {
+      "id": "QA-LAB-07",
+      "category": "library_qa",
+      "subcategory": "conditions_exceptions",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在公司连续干了十一年，现在要续签，公司能不能只跟我签固定期限合同？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十四条"],
+          "required_points": [
+            "连续工作满十年，劳动者提出或同意续订的，应当订立无固定期限劳动合同",
+            "例外：劳动者提出订立固定期限劳动合同的除外"
+          ],
+          "forbidden_claims": [
+            "不得声称工作满十年后一律必须签无固定期限而不提劳动者意愿例外"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖应当订立无固定期限的情形与例外",
+        "结论由第十四条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第十四条", "quote": "（一）劳动者在该用人单位连续工作满十年的；"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十四条", "quote": "除劳动者提出订立固定期限劳动合同外，应当订立无固定期限劳动合同"}
+      ],
+      "difference_from_regression": "旧 55 题无第十四条无固定期限订立条件题；本题考满十年条件与例外。"
+    },
+    {
+      "id": "QA-LAB-08",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "needs_legal_review",
+      "annotation_note": "第十八条约定不明确的处理路径（重新协商→集体合同→同工同酬）在合同根本未写工资时的适用方式存在解释空间；required_points 以第十七条必备条款为核心，第十八条为允许命中。",
+      "turns": [
+        {
+          "question": "公司说劳动合同里可以不写工资和社保这些，反正口头说好就行，这样可以吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十七条", "中华人民共和国劳动合同法 第十八条"],
+          "required_points": [
+            "劳动报酬和社会保险属于劳动合同必备条款，不能不写",
+            "劳动报酬约定不明确引发争议的，按重新协商、集体合同、同工同酬等规则处理"
+          ],
+          "forbidden_claims": [
+            "不得声称劳动合同可以完全不约定劳动报酬"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖必备条款要求与约定不明确的后果",
+        "结论由第十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第十七条", "quote": "（六）劳动报酬；"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十七条", "quote": "（七）社会保险；"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十八条", "quote": "劳动合同对劳动报酬和劳动条件等标准约定不明确，引发争议的，用人单位与劳动者可以重新协商"}
+      ],
+      "difference_from_regression": "旧题 46 是必备条款的术语化列举；本题是口语化“不写行吗”并叠加约定不明确的后果。"
+    },
+    {
+      "id": "QA-CON-01",
+      "category": "library_qa",
+      "subcategory": "conditions_exceptions",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在网上买了件衣服不想要了，想七天无理由退，商家说定制商品和拆封的软件都不能退，这说法站得住吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十五条"],
+          "required_points": [
+            "网络等方式销售商品，消费者有权自收到商品之日起七日内无理由退货",
+            "定作商品、在线下载或拆封的数字化商品属于除外情形",
+            "退货商品应当完好，退回运费原则上由消费者承担"
+          ],
+          "forbidden_claims": [
+            "不得声称所有商品一律适用七日无理由退货"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖无理由退货权、除外商品与运费规则",
+        "结论由第二十五条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "消费者有权自收到商品之日起七日内退货，且无需说明理由"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "（一）消费者定作的；"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "退回商品的运费由消费者承担；经营者和消费者另有约定的，按照约定。"}
+      ],
+      "difference_from_regression": "旧题 8 是七日无理由退货条件的术语化提问；本题以口语核对除外商品清单，考例外条款。"
+    },
+    {
+      "id": "QA-CON-02",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "网购收到的东西有质量问题我要退货，运费谁出？这跟七天无理由退货的运费规则是一回事吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十四条", "中华人民共和国消费者权益保护法 第二十五条"],
+          "required_points": [
+            "商品不符合质量要求的，可按国家规定或约定退货、更换、修理，必要运输费用由经营者承担",
+            "七日无理由退货的退回运费由消费者承担（另有约定除外）",
+            "两条规则的运费承担主体不同"
+          ],
+          "forbidden_claims": [
+            "不得把两种退货情形的运费规则混为一谈"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答区分质量退货与无理由退货的运费规则",
+        "结论由第二十四条、第二十五条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十四条", "quote": "依照前款规定进行退货、更换、修理的，经营者应当承担运输等必要费用。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "退回商品的运费由消费者承担；经营者和消费者另有约定的，按照约定。"}
+      ],
+      "difference_from_regression": "旧题 13 只问退换货运费谁承担；本题要求对比第二十四条与第二十五条两条不同运费规则。"
+    },
+    {
+      "id": "QA-CON-03",
+      "category": "library_qa",
+      "subcategory": "conditions_exceptions",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "商家卖假货被认定是欺诈，我买这个东西花了 200 块，能要求赔多少？要是只花了 30 块呢？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第五十五条"],
+          "required_points": [
+            "欺诈的增加赔偿为购买商品价款的三倍",
+            "增加赔偿金额不足五百元的，为五百元",
+            "200 元对应三倍 600 元；30 元三倍不足 500 元按 500 元计"
+          ],
+          "forbidden_claims": [
+            "不得编造条文之外的赔偿倍数或保底金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "消费者惩罚性赔偿适用第五十五条直接计算，不适用劳动合同赔偿计算器"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖三倍规则与 500 元保底并套用两个数额",
+        "结论由第五十五条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第五十五条", "quote": "增加赔偿的金额为消费者购买商品的价款或者接受服务的费用的三倍；增加赔偿的金额不足五百元的，为五百元。"}
+      ],
+      "difference_from_regression": "旧题 10 只问欺诈赔多少；本题给出两个价款数额并专考 500 元保底这一例外条件。"
+    },
+    {
+      "id": "QA-CON-04",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "在小卖部买了过期食品，吃完上吐下泻住了院，能找谁赔？能赔哪些项目？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第四十条", "中华人民共和国消费者权益保护法 第四十九条"],
+          "required_points": [
+            "购买商品受损可向销售者要求赔偿；缺陷商品也可向生产者要求赔偿",
+            "人身伤害赔偿包括医疗费、护理费、交通费等合理费用及因误工减少的收入"
+          ],
+          "forbidden_claims": [
+            "不得编造具体赔偿金额",
+            "不得声称只能找生产者索赔"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "未给出医疗费等数额，无计算依据"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖索赔对象与赔偿项目",
+        "结论由第四十条、第四十九条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第四十条", "quote": "消费者在购买、使用商品时，其合法权益受到损害的，可以向销售者要求赔偿。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第四十九条", "quote": "应当赔偿医疗费、护理费、交通费等为治疗和康复支出的合理费用，以及因误工减少的收入。"}
+      ],
+      "difference_from_regression": "旧题 33 只问饭店吃坏肚子能赔哪些项目；本题叠加销售者/生产者索赔对象选择。"
+    },
+    {
+      "id": "QA-CON-05",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "needs_legal_review",
+      "annotation_note": "实物样品与实际不符时直接适用第二十四条退货/更换/修理的路径，条文未逐一列明该情形的救济顺序，标注以第二十三条第二款为核心。",
+      "turns": [
+        {
+          "question": "商家拿广告和实物样品宣传说商品跟样品一模一样，我收到的根本不一样，能要求退换吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十三条", "中华人民共和国消费者权益保护法 第二十四条"],
+          "required_points": [
+            "以广告、产品说明、实物样品表明质量状况的，实际质量应与表明的质量状况相符",
+            "不符合质量要求的，可按国家规定或约定退货、更换、修理"
+          ],
+          "forbidden_claims": [
+            "不得声称与样品不符只能接受换货而不能退货"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖质量相符义务与退换修救济",
+        "结论由第二十三条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十三条", "quote": "经营者以广告、产品说明、实物样品或者其他方式表明商品或者服务的质量状况的，应当保证其提供的商品或者服务的实际质量与表明的质量状况相符。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十四条", "quote": "消费者可以依照国家规定、当事人约定退货，或者要求经营者履行更换、修理等义务。"}
+      ],
+      "difference_from_regression": "旧题 28 问耐用商品瑕疵举证责任（第二十三条第三款）；本题考第二十三条第二款的样品相符义务与第二十四条救济。"
+    },
+    {
+      "id": "QA-CON-06",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "店家把我的手机号卖给了别人，天天收到推销短信，我明确拒绝了还一直发，我能怎么办？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十九条", "中华人民共和国消费者权益保护法 第五十条"],
+          "required_points": [
+            "经营者及其工作人员不得泄露、出售或非法向他人提供消费者个人信息",
+            "未经同意或消费者明确拒绝的，不得发送商业性信息",
+            "可要求停止侵害、赔礼道歉并赔偿损失"
+          ],
+          "forbidden_claims": [
+            "不得编造具体赔偿金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖信息保护义务、商业信息禁令与救济",
+        "结论由第二十九条、第五十条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十九条", "quote": "经营者及其工作人员对收集的消费者个人信息必须严格保密，不得泄露、出售或者非法向他人提供。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十九条", "quote": "经营者未经消费者同意或者请求，或者消费者明确表示拒绝的，不得向其发送商业性信息。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第五十条", "quote": "应当停止侵害、恢复名誉、消除影响、赔礼道歉，并赔偿损失。"}
+      ],
+      "difference_from_regression": "旧题 9 是第二十九条收集使用要求的术语化提问；本题是骚扰短信场景并追加第五十条救济后果。"
+    },
+    {
+      "id": "QA-CON-07",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "刚买的电饭煲用了两次内胆就掉了，我要求退货，商家说只能给修，这样对吗？我能主张哪些处理方式？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十四条", "中华人民共和国消费者权益保护法 第五十二条"],
+          "required_points": [
+            "商品不符合质量要求的，可按国家规定或约定退货，或要求更换、修理",
+            "财产损害可主张修理、重作、更换、退货、补足数量、退还货款或赔偿损失",
+            "商家单方面限定只能修理不成立"
+          ],
+          "forbidden_claims": [
+            "不得声称消费者只能接受修理"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答覆盖可用救济方式并否定只能修的主张",
+        "结论由第二十四条、第五十二条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十四条", "quote": "消费者可以依照国家规定、当事人约定退货，或者要求经营者履行更换、修理等义务。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第五十二条", "quote": "承担修理、重作、更换、退货、补足商品数量、退还货款和服务费用或者赔偿损失等民事责任"}
+      ],
+      "difference_from_regression": "旧 55 题无第五十二条民事责任方式题；本题考救济方式清单与商家单方限制的效力。"
+    },
+    {
+      "id": "QA-CON-08",
+      "category": "library_qa",
+      "subcategory": "multi_article",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在展销会上买的电器出了问题，展销会散了找不到卖家；还有双网购的鞋，也联系不上卖家，这两种情况分别能找谁赔？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第四十三条", "中华人民共和国消费者权益保护法 第四十四条"],
+          "required_points": [
+            "展销会结束或柜台租赁期满后，可向展销会举办者、柜台出租者要求赔偿",
+            "网络交易平台不能提供销售者真实名称、地址和有效联系方式的，可向平台提供者要求赔偿"
+          ],
+          "forbidden_claims": [
+            "不得声称展销会散会后消费者只能自担损失"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "回答分别覆盖展销会与网购平台两类索赔对象",
+        "结论由第四十三条、第四十四条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第四十三条", "quote": "展销会结束或者柜台租赁期满后，也可以向展销会的举办者、柜台的出租者要求赔偿。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第四十四条", "quote": "网络交易平台提供者不能提供销售者或者服务者的真实名称、地址和有效联系方式的，消费者也可以向网络交易平台提供者要求赔偿"}
+      ],
+      "difference_from_regression": "旧题 14、54 分别单问第四十四条、第四十三条；本题将两种情形合并为一题对比作答，考多条文组合。"
+    },
+    {
+      "id": "BND-OOS-01",
+      "category": "boundary",
+      "subcategory": "out_of_scope",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "个人所得税的专项附加扣除标准现在是多少钱一个月？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "明确说明现有资料无法回答（税法不属于库内两部法律）"
+          ],
+          "forbidden_claims": [
+            "不得给出任何具体扣除金额或比例"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "库外问题，不得编造参数计算"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明现有资料不足",
+        "不出现任何具体扣除数额"
+      ],
+      "evidence": [
+        {"note": "kb/ 仅包含《中华人民共和国劳动合同法》与《中华人民共和国消费者权益保护法》；个人所得税规则不在库内。"}
+      ],
+      "difference_from_regression": "旧题 16-20、41-45 的库外主题为刑法、婚姻、交通、专利、公司、刑诉；本题为税法，主题不同。"
+    },
+    {
+      "id": "BND-OOS-02",
+      "category": "boundary",
+      "subcategory": "out_of_scope",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "故意伤害把人打成轻伤，一般要判多少年？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "明确说明现有资料无法回答（刑法量刑不在库内）"
+          ],
+          "forbidden_claims": [
+            "不得给出任何具体量刑幅度"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "库外问题"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明现有资料不足",
+        "不出现具体量刑年数"
+      ],
+      "evidence": [
+        {"note": "kb/ 不含刑法；故意伤害量刑规则不在库内。"}
+      ],
+      "difference_from_regression": "旧题库外项无刑法量刑主题（旧题 16 为取保候审条件、41 为非法证据排除）。"
+    },
+    {
+      "id": "BND-OOS-03",
+      "category": "boundary",
+      "subcategory": "out_of_scope",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "租的房子还没到期，房东把房子卖了，我必须马上搬走吗？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "明确说明现有资料无法回答（房屋租赁与买卖规则不在库内）"
+          ],
+          "forbidden_claims": [
+            "不得给出具体的腾退义务或期限结论"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "库外问题"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明现有资料不足",
+        "不出现无依据的腾退结论"
+      ],
+      "evidence": [
+        {"note": "kb/ 不含房屋租赁与房屋买卖相关法律；该问题不属于库内两部法律。"}
+      ],
+      "difference_from_regression": "旧题库外项无房屋租赁主题。"
+    },
+    {
+      "id": "BND-OOS-04",
+      "category": "boundary",
+      "subcategory": "out_of_scope",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司要上市，需要满足哪些财务指标条件？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "明确说明现有资料无法回答（证券上市规则不在库内）"
+          ],
+          "forbidden_claims": [
+            "不得给出任何具体上市财务门槛"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "库外问题"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明现有资料不足",
+        "不出现具体财务门槛数字"
+      ],
+      "evidence": [
+        {"note": "kb/ 不含证券法及上市规则；该问题不属于库内两部法律。"}
+      ],
+      "difference_from_regression": "旧题 20、45 为公司注册资本与股东出资主题；本题为证券上市条件，主题不同。"
+    },
+    {
+      "id": "BND-INS-01",
+      "category": "boundary",
+      "subcategory": "insufficient_evidence",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司今天把我开除了，应该赔我多少钱？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "说明仅凭现有信息无法算出金额：需明确解除性质（合法/违法）、工作年限、月工资等事实"
+          ],
+          "forbidden_claims": [
+            "不得给出任何具体赔偿金额",
+            "不得编造工作年限或月工资"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "缺解除性质、年限与月工资，不得编造参数计算"
+        }
+      ],
+      "completion_criteria": [
+        "说明所需缺失事实",
+        "不出现任何编造金额或编造参数"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "本条所称月工资是指劳动者在劳动合同解除或者终止前十二个月的平均工资。"},
+        {"note": "第四十七条的计算需要工作年限与月工资两个事实，本题均未提供；解除性质决定适用第四十七条还是第八十七条，亦未提供。"}
+      ],
+      "difference_from_regression": "旧 55 题无“缺全部计算事实”的边界题；旧题 5 问的是计算标准本身。"
+    },
+    {
+      "id": "BND-INS-02",
+      "category": "boundary",
+      "subcategory": "insufficient_evidence",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我买的这个包到底是不是假货？商家这样算不算欺诈，能要求三倍赔偿吗？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "说明仅凭现有信息无法认定商品真伪与欺诈成立",
+            "可以说明若认定欺诈则按第五十五条处理，但不得直接断言成立"
+          ],
+          "forbidden_claims": [
+            "不得直接断言商家构成欺诈或必然获得三倍赔偿"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "事实认定问题，无计算参数"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明事实或证据不足",
+        "不出现无依据的欺诈认定结论"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第五十五条", "quote": "经营者提供商品或者服务有欺诈行为的，应当按照消费者的要求增加赔偿其受到的损失"},
+        {"note": "第五十五条以“有欺诈行为”为前提，本题未提供任何可认定欺诈的证据。"}
+      ],
+      "difference_from_regression": "旧题 10 假定欺诈已成立问赔偿倍数；本题的前提事实本身待证，考证据不足时的边界处理。"
+    },
+    {
+      "id": "BND-INS-03",
+      "category": "boundary",
+      "subcategory": "insufficient_evidence",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "帮我判断一下我这个劳动仲裁案子能不能赢，胜算有多大？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "说明无法评估个案胜率：需要具体事实与证据材料"
+          ],
+          "forbidden_claims": [
+            "不得给出任何胜率、胜算比例或确定的胜负结论"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "个案评估问题"
+        }
+      ],
+      "completion_criteria": [
+        "明确说明无法评估个案结果",
+        "不出现胜率或胜负断言"
+      ],
+      "evidence": [
+        {"note": "个案胜负取决于具体事实与证据，库内条文只提供规则，无法支持胜率判断。"}
+      ],
+      "difference_from_regression": "旧 55 题均为规则问答，无个案胜率评估题。"
+    },
+    {
+      "id": "BND-INS-04",
+      "category": "boundary",
+      "subcategory": "insufficient_evidence",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在公司干了几年记不清了，工资单也找不到了，能帮我算出离职补偿是多少钱吗？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "说明缺少工作年限与月工资数据，无法计算具体补偿",
+            "可以说明计算规则需要年限与月工资，但不得代入编造数值"
+          ],
+          "forbidden_claims": [
+            "不得编造工作年限、月工资或补偿金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "缺计算必需事实，不得编造参数计算"
+        }
+      ],
+      "completion_criteria": [
+        "说明缺失的计算事实",
+        "不出现编造数值"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。"},
+        {"note": "第四十七条计算以工作年限与月工资为输入，用户明确表示两者均无法提供。"}
+      ],
+      "difference_from_regression": "旧题 5 问计算标准；本题是计算输入全部缺失的证据不足边界题。"
+    },
+    {
+      "id": "TOOL-CALC-01",
+      "category": "tool_routing",
+      "subcategory": "calc_complete",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在公司连续工作 4 年，月工资 8000 元，公司向我提出协商一致解除劳动合同，经济补偿金是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第三十六条", "中华人民共和国劳动合同法 第四十六条", "中华人民共和国劳动合同法 第四十七条"],
+          "required_points": [
+            "用人单位提出协商一致解除的，应支付经济补偿",
+            "按工作年限每满一年一个月工资计算，4 年对应 4 个月工资即 32000 元"
+          ],
+          "forbidden_claims": [
+            "不得给出与 32000 元不符的补偿总额"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 8000, "years": 4, "kind": "N"}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "规划并执行计算工具且参数正确",
+        "回答金额与工具结果一致",
+        "结论由第四十六条、第四十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十六条", "quote": "用人单位依照本法第三十六条规定向劳动者提出解除劳动合同并与劳动者协商一致解除劳动合同的"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "每满一年支付一个月工资的标准向劳动者支付"}
+      ],
+      "difference_from_regression": "旧 55 题无工具路由与参数抽取场景；本题为完整参数的 N 型经济补偿计算。"
+    },
+    {
+      "id": "TOOL-CALC-02",
+      "category": "tool_routing",
+      "subcategory": "calc_complete",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司说我不能胜任工作把我辞退，也没有提前三十天通知我。我在公司干了 2 年，月工资 12000 元，一共能拿多少钱？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十条", "中华人民共和国劳动合同法 第四十六条", "中华人民共和国劳动合同法 第四十七条"],
+          "required_points": [
+            "不能胜任工作经培训或调岗仍不能胜任的，用人单位可提前三十日书面通知或额外支付一个月工资后解除",
+            "应付经济补偿 2 个月工资即 24000 元，另加一个月代通知金 12000 元，合计 36000 元"
+          ],
+          "forbidden_claims": [
+            "不得遗漏代通知金，不得给出与 36000 元不符的总额"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 12000, "years": 2, "kind": "N+1"}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "工具规划 kind 为 N+1 且参数正确",
+        "回答包含经济补偿与代通知金两部分",
+        "结论由第四十条、第四十六条、第四十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十条", "quote": "用人单位提前三十日以书面形式通知劳动者本人或者额外支付劳动者一个月工资后，可以解除劳动合同"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "每满一年支付一个月工资的标准向劳动者支付"}
+      ],
+      "difference_from_regression": "旧题无代通知金（N+1）场景；本题考 N+1 参数抽取与组成结构。"
+    },
+    {
+      "id": "TOOL-CALC-03",
+      "category": "tool_routing",
+      "subcategory": "calc_complete",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司没有任何理由就把我开除了，我在公司干了 5 年，月工资 6000 元，违法解除的赔偿金是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第四十八条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "违法解除的赔偿金按经济补偿标准的二倍计算",
+            "经济补偿为 5 个月工资即 30000 元，二倍即 60000 元"
+          ],
+          "forbidden_claims": [
+            "不得按一倍标准给出 30000 元作为赔偿金总额"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 6000, "years": 5, "kind": "2N"}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "工具规划 kind 为 2N 且参数正确",
+        "回答金额与工具结果一致",
+        "结论由第八十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第八十七条", "quote": "应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "每满一年支付一个月工资的标准向劳动者支付"}
+      ],
+      "difference_from_regression": "旧题无违法解除赔偿金计算场景；本题考 2N 参数抽取。"
+    },
+    {
+      "id": "TOOL-CALC-04",
+      "category": "tool_routing",
+      "subcategory": "calc_complete",
+      "execution_scope": "graph",
+      "annotation_status": "needs_legal_review",
+      "annotation_note": "第八十七条赔偿金是否同样适用第四十七条第二款的三倍封顶与十二年上限，实务存在解释空间；本题标注按条文指引（87 条“按 47 条经济补偿标准的二倍”）执行，待独立复核。",
+      "turns": [
+        {
+          "question": "我在公司干了 15 年，月工资 40000 元，当地上年度职工月平均工资 10000 元，公司违法辞退我，赔偿金是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "月工资超过社平工资三倍的，按三倍数额（30000 元）计且年限最高十二年",
+            "赔偿金按经济补偿标准二倍计算"
+          ],
+          "forbidden_claims": [
+            "不得按 40000 元或 15 年全额计算而不适用封顶规则"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 40000, "years": 15, "kind": "2N", "social_average_wage": 10000}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "工具参数含社平工资且正确",
+        "回答体现三倍封顶与十二年上限",
+        "结论由第四十七条、第八十七条支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "向其支付经济补偿的标准按职工月平均工资三倍的数额支付，向其支付经济补偿的年限最高不超过十二年。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第八十七条", "quote": "应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"}
+      ],
+      "difference_from_regression": "旧题无社平工资封顶参数抽取场景；本题考可选参数抽取与封顶规则。"
+    },
+    {
+      "id": "TOOL-MISS-01",
+      "category": "tool_routing",
+      "subcategory": "calc_missing_params",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我月工资 8000 元，被公司违法辞退了，能拿到多少赔偿金？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "说明缺少工作年限无法算出具体金额",
+            "不编造工作年限，不执行缺乏依据的计算"
+          ],
+          "forbidden_claims": [
+            "不得编造工作年限或赔偿金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "缺工作年限（years），不得编造参数调用计算工具",
+          "missing_params": ["years"]
+        }
+      ],
+      "completion_criteria": [
+        "未规划计算工具或未执行无依据计算",
+        "不出现编造年限或金额"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。"},
+        {"note": "题面只给月工资 8000 元，工作年限缺失。"}
+      ],
+      "difference_from_regression": "旧题无缺参计算场景；本题只评估“不编造参数、不执行缺乏依据的计算”，不要求结构化追问。"
+    },
+    {
+      "id": "TOOL-MISS-02",
+      "category": "tool_routing",
+      "subcategory": "calc_missing_params",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在公司连续干了 7 年，公司裁员把我辞退了，经济补偿是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十六条", "中华人民共和国劳动合同法 第四十七条"],
+          "required_points": [
+            "说明缺少月工资无法算出具体金额",
+            "不编造月工资，不执行缺乏依据的计算"
+          ],
+          "forbidden_claims": [
+            "不得编造月工资或补偿金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "缺月工资（monthly_wage），不得编造参数调用计算工具",
+          "missing_params": ["monthly_wage"]
+        }
+      ],
+      "completion_criteria": [
+        "未规划计算工具或未执行无依据计算",
+        "不出现编造工资或金额"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "本条所称月工资是指劳动者在劳动合同解除或者终止前十二个月的平均工资。"},
+        {"note": "题面只给工作年限 7 年，月工资缺失。"}
+      ],
+      "difference_from_regression": "旧题无缺参计算场景；本题只评估“不编造参数、不执行缺乏依据的计算”。"
+    },
+    {
+      "id": "TOOL-WEB-01",
+      "category": "tool_routing",
+      "subcategory": "web_route",
+      "execution_scope": "route_only",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "劳动合同法最近有没有修订过？现在还是现行有效的吗？",
+          "use_web_search": true,
+          "expected_articles": [],
+          "required_points": [],
+          "forbidden_claims": [],
+          "expected_tools": [
+            {"name": "verify_statute_status", "args": {"query": {"match": "question"}}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "route() 规划出 verify_statute_status 且 query 取自本轮问题"
+      ],
+      "evidence": [
+        {"note": "route() 对 use_web_search=true 且命中法规时效关键词（修订/现行有效）的问题规划 verify_statute_status；本题仅测规划结果，不执行真实搜索。"}
+      ],
+      "difference_from_regression": "旧 55 题无工具路由场景；本题为 route_only 联网路由规划测试。"
+    },
+    {
+      "id": "TOOL-WEB-02",
+      "category": "tool_routing",
+      "subcategory": "web_route",
+      "execution_scope": "route_only",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "帮我查一下现在关于网络消费维权的最新规定有哪些？",
+          "use_web_search": true,
+          "expected_articles": [],
+          "required_points": [],
+          "forbidden_claims": [],
+          "expected_tools": [
+            {"name": "web_search", "args": {"query": {"match": "question"}, "count": 5}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "route() 规划出 web_search 且参数为本轮问题与 count=5"
+      ],
+      "evidence": [
+        {"note": "route() 对 use_web_search=true 且未命中法规时效关键词的问题规划 web_search（count=5）；本题仅测规划结果，不执行真实搜索。"}
+      ],
+      "difference_from_regression": "旧 55 题无工具路由场景；本题为 route_only 联网路由规划测试。"
+    },
+    {
+      "id": "MT-REF-01",
+      "category": "multi_turn",
+      "subcategory": "reference",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "试用期的工资有没有什么底线？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第二十条"],
+          "required_points": [
+            "试用期工资不得低于本单位相同岗位最低档工资或劳动合同约定工资的百分之八十，且不低于当地最低工资标准"
+          ],
+          "forbidden_claims": [
+            "不得编造具体工资比例之外的数值"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "那试用期最长能约定多久呢？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十九条"],
+          "required_points": [
+            "正确接续“试用期”主题（指代“那”）",
+            "按合同期限分档说明试用期上限（一个月/二个月/六个月）"
+          ],
+          "forbidden_claims": [
+            "不得答非所问转向无关主题"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均作答",
+        "第二轮正确解析“那”的指代并接续试用期主题",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第二十条", "quote": "劳动者在试用期的工资不得低于本单位相同岗位最低档工资或者劳动合同约定工资的百分之八十"},
+        {"source": "中华人民共和国劳动合同法", "article": "第十九条", "quote": "劳动合同期限三个月以上不满一年的，试用期不得超过一个月；劳动合同期限一年以上不满三年的，试用期不得超过二个月"}
+      ],
+      "difference_from_regression": "旧 55 题全部为单轮独立题；本题考两轮指代消解。"
+    },
+    {
+      "id": "MT-REF-02",
+      "category": "multi_turn",
+      "subcategory": "reference",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "竞业限制的补偿应该怎么给？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第二十三条"],
+          "required_points": [
+            "解除或终止劳动合同后，在竞业限制期限内按月给予经济补偿"
+          ],
+          "forbidden_claims": [
+            "不得声称竞业限制无需补偿"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "那哪些人才需要遵守竞业限制？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第二十四条"],
+          "required_points": [
+            "正确接续竞业限制主题",
+            "人员限于高级管理人员、高级技术人员和其他负有保密义务的人员"
+          ],
+          "forbidden_claims": [
+            "不得声称全体员工都受竞业限制约束"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均作答",
+        "第二轮正确解析指代并回答人员范围",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第二十三条", "quote": "在竞业限制期限内按月给予劳动者经济补偿"},
+        {"source": "中华人民共和国劳动合同法", "article": "第二十四条", "quote": "竞业限制的人员限于用人单位的高级管理人员、高级技术人员和其他负有保密义务的人员。"}
+      ],
+      "difference_from_regression": "旧题 23 是单轮期限问题；本题是两轮指代场景，聚焦补偿给付方式与人员范围。"
+    },
+    {
+      "id": "MT-ELL-01",
+      "category": "multi_turn",
+      "subcategory": "ellipsis",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "经济补偿金按什么标准计算？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条"],
+          "required_points": [
+            "按本单位工作年限每满一年一个月工资计算，六个月以上不满一年按一年，不满六个月按半个月工资"
+          ],
+          "forbidden_claims": [
+            "不得编造条文之外的计算比例"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "未给出工资与年限数值"
+        },
+        {
+          "question": "如果是被违法辞退的呢？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "补全省略内容：违法辞退的赔偿如何计算",
+            "赔偿金按经济补偿标准的二倍支付"
+          ],
+          "forbidden_claims": [
+            "不得继续只答经济补偿而不提二倍赔偿金"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "未给出工资与年限数值"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均作答",
+        "第二轮补全省略语义并回答二倍赔偿标准",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "六个月以上不满一年的，按一年计算；不满六个月的，向劳动者支付半个月工资的经济补偿。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第八十七条", "quote": "应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"}
+      ],
+      "difference_from_regression": "旧题 5 是单轮计算标准题；本题第二轮为省略句追问，考上下文补全。"
+    },
+    {
+      "id": "MT-ELL-02",
+      "category": "multi_turn",
+      "subcategory": "ellipsis",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "七天无理由退货哪些商品不适用？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十五条"],
+          "required_points": [
+            "除外商品包括定作、鲜活易腐、在线下载或拆封的数字化商品、报纸期刊，以及其他购买时确认不宜退货的商品"
+          ],
+          "forbidden_claims": [
+            "不得遗漏定作商品与拆封数字化商品两类除外情形"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "如果是质量问题要退呢？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十四条"],
+          "required_points": [
+            "补全省略内容：存在质量问题时的退货规则",
+            "不符合质量要求的可退货、更换、修理，必要运输费用由经营者承担"
+          ],
+          "forbidden_claims": [
+            "不得把质量问题退货仍按无理由退货的运费规则作答"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均作答",
+        "第二轮补全省略语义并切换到质量退货规则",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "（一）消费者定作的；"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十四条", "quote": "经营者提供的商品或者服务不符合质量要求的，消费者可以依照国家规定、当事人约定退货，或者要求经营者履行更换、修理等义务。"}
+      ],
+      "difference_from_regression": "旧题 8 是单轮条件题；本题第二轮为省略句追问，考上下文补全与规则切换。"
+    },
+    {
+      "id": "MT-COR-01",
+      "category": "multi_turn",
+      "subcategory": "fact_correction",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我月工资 20000 元，在公司干了 3 年，公司违法辞退我，赔偿金是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "按 2 倍标准计算：3 年对应 3 个月工资，二倍即 120000 元",
+            "引用第八十七条支持二倍标准"
+          ],
+          "forbidden_claims": [
+            "不得给出与 120000 元不符的总额"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 20000, "years": 3, "kind": "2N"}}
+          ]
+        },
+        {
+          "question": "不好意思我记错了，月工资其实是 5000 元才对，赔偿金重新算一下是多少？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第四十七条", "中华人民共和国劳动合同法 第八十七条"],
+          "required_points": [
+            "基于纠正后的月工资 5000 元重新计算：二倍赔偿金为 30000 元",
+            "不再使用 20000 元的错误事实"
+          ],
+          "forbidden_claims": [
+            "不得沿用 20000 元月工资或 120000 元总额"
+          ],
+          "expected_tools": [
+            {"name": "calculate_labor_compensation", "args": {"monthly_wage": 5000, "years": 3, "kind": "2N"}}
+          ]
+        }
+      ],
+      "completion_criteria": [
+        "两轮均完成计算任务",
+        "第二轮使用纠正后事实且工具参数随之更新",
+        "两轮结论均有条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第八十七条", "quote": "应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。"},
+        {"source": "中华人民共和国劳动合同法", "article": "第四十七条", "quote": "每满一年支付一个月工资的标准向劳动者支付"}
+      ],
+      "difference_from_regression": "旧 55 题无多轮事实纠正场景；本题考纠正后不得沿用旧事实。"
+    },
+    {
+      "id": "MT-COR-02",
+      "category": "multi_turn",
+      "subcategory": "fact_correction",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "我在网上买了件外套，收到七天后因为不喜欢颜色想退掉，还能七天无理由退货吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十五条"],
+          "required_points": [
+            "无理由退货权自收到商品之日起七日内行使，超过七日原则上不再适用",
+            "不喜欢颜色不属于质量问题"
+          ],
+          "forbidden_claims": [
+            "不得声称超过七日仍可无理由退货"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "啊我记错了，其实是因为衣服洗了一次就破了，是质量问题，那能怎么退？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十四条"],
+          "required_points": [
+            "基于纠正后的质量问题事实作答，适用不符合质量要求的退货、更换、修理规则",
+            "不再以七日无理由退货规则作为结论"
+          ],
+          "forbidden_claims": [
+            "不得沿用“超过七日不能退”的无理由退货结论"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均作答",
+        "第二轮切换到质量退货规则且不沿用上一轮结论",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "消费者有权自收到商品之日起七日内退货，且无需说明理由"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十四条", "quote": "经营者提供的商品或者服务不符合质量要求的，消费者可以依照国家规定、当事人约定退货，或者要求经营者履行更换、修理等义务。"}
+      ],
+      "difference_from_regression": "旧 55 题无事实纠正场景；本题考纠正后从无理由退货规则切换到质量退货规则。"
+    },
+    {
+      "id": "MT-SWT-01",
+      "category": "multi_turn",
+      "subcategory": "topic_switch",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "公司一直不跟我签书面劳动合同，会有什么后果？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国劳动合同法 第十条", "中华人民共和国劳动合同法 第八十二条"],
+          "required_points": [
+            "超过一个月不满一年未订立书面合同的，每月支付二倍工资",
+            "应自用工之日起一个月内订立书面劳动合同"
+          ],
+          "forbidden_claims": [
+            "不得编造具体金额"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "对了，我在网上买的鞋不想要了，能退吗？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十五条"],
+          "required_points": [
+            "正确处理主题切换：回答网购七日无理由退货规则",
+            "不再纠缠上一轮劳动话题"
+          ],
+          "forbidden_claims": [
+            "不得继续回答劳动法问题而无视本轮问题"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        }
+      ],
+      "completion_criteria": [
+        "两轮均按各自主题作答",
+        "第二轮不串题，覆盖七日无理由退货要点",
+        "两轮结论均有对应条文支持"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国劳动合同法", "article": "第八十二条", "quote": "应当向劳动者每月支付二倍的工资。"},
+        {"source": "中华人民共和国消费者权益保护法", "article": "第二十五条", "quote": "消费者有权自收到商品之日起七日内退货，且无需说明理由"}
+      ],
+      "difference_from_regression": "旧 55 题无跨主题多轮场景；本题考跨法律主题切换。"
+    },
+    {
+      "id": "MT-SWT-02",
+      "category": "multi_turn",
+      "subcategory": "topic_switch",
+      "execution_scope": "graph",
+      "annotation_status": "executor_annotated",
+      "turns": [
+        {
+          "question": "买的商品出了质量问题，我可以要求商家怎么处理？",
+          "use_web_search": false,
+          "expected_articles": ["中华人民共和国消费者权益保护法 第二十四条", "中华人民共和国消费者权益保护法 第五十二条"],
+          "required_points": [
+            "可要求退货、更换、修理等处理",
+            "财产损害可主张修理、重作、更换、退货、补足数量、退还货款或赔偿损失"
+          ],
+          "forbidden_claims": [
+            "不得声称只能接受维修"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "规则问答"
+        },
+        {
+          "question": "另外我想问下，离职补偿金要交个人所得税吗？",
+          "use_web_search": false,
+          "expected_articles": [],
+          "required_points": [
+            "正确处理主题切换并说明现有资料无法回答（个税规则不在库内）"
+          ],
+          "forbidden_claims": [
+            "不得给出任何个税金额、比例或免税结论"
+          ],
+          "expected_tools": [],
+          "expect_no_tool_reason": "库外问题"
+        }
+      ],
+      "completion_criteria": [
+        "第一轮覆盖质量救济要点",
+        "第二轮切换主题并明确说明资料不足，不编造个税结论",
+        "第二轮不沿用第一轮劳动/消费维权语境作答"
+      ],
+      "evidence": [
+        {"source": "中华人民共和国消费者权益保护法", "article": "第五十二条", "quote": "承担修理、重作、更换、退货、补足商品数量、退还货款和服务费用或者赔偿损失等民事责任"},
+        {"note": "第二轮为个税主题，kb/ 不含个人所得税法律。"}
+      ],
+      "difference_from_regression": "旧 55 题无多轮主题切换 + 库外拒答组合场景。"
+    }
+  ]
+}

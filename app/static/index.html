@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LawRAG 法律问答演示</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f5f6f8; color: #202124; }
+    main { width: min(760px, calc(100% - 32px)); margin: 40px auto; }
+    h1 { margin-bottom: 8px; }
+    .disclaimer { padding: 14px 16px; border-left: 4px solid #b45309; background: #fff7ed; }
+    form, .result { margin-top: 24px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px #0000000d; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    textarea { box-sizing: border-box; width: 100%; min-height: 110px; padding: 12px; resize: vertical; font: inherit; }
+    button { margin-top: 12px; padding: 10px 18px; border: 0; border-radius: 6px; background: #1d4ed8; color: white; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .status { min-height: 24px; margin-top: 12px; color: #475569; }
+    .error { color: #b91c1c; }
+    .answer { white-space: pre-wrap; line-height: 1.7; }
+    .citations { padding-left: 22px; line-height: 1.7; }
+    [hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>LawRAG 法律问答演示</h1>
+    <p class="disclaimer"><strong>免责声明：</strong>本项目仅供技术学习与演示，回答由 AI 生成，不构成法律意见，不得用于实际法律决策。</p>
+
+    <form id="ask-form">
+      <label for="question">请输入法律问题</label>
+      <textarea id="question" name="question" required placeholder="例如：劳动合同到期，公司不续签，有经济补偿吗？"></textarea>
+      <button id="submit" type="submit">提交问题</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </form>
+
+    <section id="result" class="result" hidden>
+      <h2>回答</h2>
+      <div id="answer" class="answer"></div>
+      <h2>引用来源</h2>
+      <ul id="citations" class="citations"></ul>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#ask-form");
+    const question = document.querySelector("#question");
+    const submit = document.querySelector("#submit");
+    const status = document.querySelector("#status");
+    const result = document.querySelector("#result");
+    const answer = document.querySelector("#answer");
+    const citations = document.querySelector("#citations");
+
+    function errorMessage(data) {
+      if (typeof data.detail === "string") return data.detail;
+      if (Array.isArray(data.detail) && data.detail.length) {
+        return data.detail.map(item => item.msg).join("；");
+      }
+      return "请求失败，请稍后重试";
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      submit.disabled = true;
+      status.classList.remove("error");
+      status.textContent = "检索中…";
+      result.hidden = true;
+
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: question.value })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(errorMessage(data));
+
+        answer.textContent = data.answer;
+        citations.replaceChildren(...data.citations.map(item => {
+          const entry = document.createElement("li");
+          entry.textContent = `《${item.source}》${item.article}（相关度：${Number(item.score).toFixed(4)}）`;
+          return entry;
+        }));
+        result.hidden = false;
+        status.textContent = "";
+      } catch (error) {
+        status.classList.add("error");
+        status.textContent = error.message || "请求失败，请稍后重试";
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
